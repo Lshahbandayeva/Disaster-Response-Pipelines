@@ -3,6 +3,16 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
+    """This function gets filepaths of messages and categories, merges them and storem 
+    it in a single DataFrame object.
+
+    Args:
+       messages_filepath: filepath of disaster_messages.csv
+       categories_filepath: filepath of disaster_categories.csv
+
+    Returns:
+       df: a single DataFrame object that stores both messages and categories
+    """
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
     df = pd.merge(messages, categories, left_on = 'id', right_on = 'id', how = 'left')
@@ -10,6 +20,14 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
+    """This function splits dataset into categories, drops duplicates.
+
+    Args:
+       df: raw DataFrame object
+
+    Returns:
+       df: cleaned DataFrame object
+    """
     categories = df['categories'].str.split(';', expand = True)
     row = categories.iloc[0]
     category_colnames = row.apply(lambda x: x[:-2])
@@ -26,8 +44,17 @@ def clean_data(df):
 
 
 def save_data(df, database_filename):
+    """This function gets filename of database, and export the data into a table.
+
+    Args:
+       df: a DataFrame object in sqllite
+       database_filename: name of database file
+
+    Returns:
+       none
+    """
     engine = create_engine('sqlite:///' + database_filename)
-    df.to_sql('InsertTableName', engine, index=False)
+    df.to_sql('DisasterTable', engine, index=False)
 
     
 def main():
