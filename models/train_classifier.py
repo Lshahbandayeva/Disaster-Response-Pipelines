@@ -35,8 +35,8 @@ def load_data(database_filepath):
        Y: labels
        category_names: name of categories
     """
-    engine = create_engine('sqlite:///InsertDatabaseName.db')
-    df = pd.read_sql_table('InsertTableName', engine)
+    engine = create_engine('sqlite:///' + database_filepath)
+    df = pd.read_sql_table('DisasterTable', engine)
     X = df['message']
     Y = df[df.columns[4:]]
     category_names = list(df.columns[4:])
@@ -72,13 +72,13 @@ def tokenize(text):
 
 def build_model():
     """This function build a pipeline and train it with set of parameters and train model with 
-    best params through GridSearchCV.
+    best parameters through GridSearchCV.
 
     Args:
        none
 
     Returns:
-       grid_search:
+       grid_search: GridSearchCV model
     """
     pipeline = Pipeline([
     ('feature_pipeline', FeatureUnion([
@@ -94,13 +94,13 @@ def build_model():
     ])
     
     parameters = {
+        'clf__estimator__n_estimators': [50, 100],
         'clf__estimator__max_depth': [2, 3]
     }
 
     grid_search = GridSearchCV(pipeline, param_grid = parameters, cv = 3, n_jobs = -1)
     return grid_search
     
-
 
 def evaluate_model(model, X_test, Y_test, category_names):
     """This function evaluate the model with calculating accuracy score and classification metric 
@@ -118,9 +118,9 @@ def evaluate_model(model, X_test, Y_test, category_names):
     y_pred = model.predict(X_test)
     y_pred = pd.DataFrame(y_pred)
     i = 0
-    for col in y_test.columns:
-        print("Accuracy score: ", accuracy_score(y_test[col], y_pred[i]))
-        print(classification_report(y_test[col], y_pred[i]))
+    for col in Y_test.columns:
+        print("Accuracy score: ", accuracy_score(Y_test[col], y_pred[i]))
+        print(classification_report(Y_test[col], y_pred[i]))
         i += 1
 
 def save_model(model, model_filepath):
@@ -133,7 +133,7 @@ def save_model(model, model_filepath):
     Returns:
        none
     """
-    pickle.dump(model, open(model_filepath), "wb")
+    pickle.dump(model, open(model_filepath, "wb"))
 
 
 def main():
